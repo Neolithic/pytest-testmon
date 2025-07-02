@@ -660,12 +660,16 @@ class DB:  # pylint: disable=too-many-public-methods
                 (environment_name,),
             ).fetchone()
 
+            print("environment_name", environment_name)
+            print("python_version", python_version)
             if environment:
                 environment_id = environment["id"]
                 packages_changed = (
                     environment["system_packages"] != system_packages
                     or environment["python_version"] != python_version
                 )
+                print("environment_packages", environment["system_packages"])
+                print("environment_python_version", environment["python_version"])
             else:
                 packages_changed = False
             if not environment or packages_changed:
