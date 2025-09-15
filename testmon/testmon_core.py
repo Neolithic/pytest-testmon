@@ -310,6 +310,8 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
             self.unstable_test_names.add(fingerprint_miss)
             self.unstable_files.add(fingerprint_miss.split("::", 1)[0])
 
+        print("unstable files:\n", self.unstable_files)
+
         self.stable_test_names = set(self.all_tests) - self.unstable_test_names
         self.stable_files = set(self.all_files) - self.unstable_files
 
