@@ -211,7 +211,7 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
 
         self.system_packages_change = result["packages_changed"]
         self.files_of_interest = result["filenames"]
-
+        print("result after db fetch:", result)
         self.all_files = {}
         self.unstable_test_names = None
         self.unstable_files = None
