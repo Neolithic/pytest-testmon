@@ -284,15 +284,19 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
 
     def determine_stable(self, assert_old=True):
         files_fshas = {}
+
+        print('files of interest:\n', self.files_of_interest)
         for filename in self.files_of_interest:
             module = self.source_tree.get_file(filename)
             if module:
                 files_fshas[filename] = module.fs_fsha
 
+        print('file_fshas:', file_fshas)
         # Compare the fshas from disk to the fshas in the database and get files
         # where the fsha is not in database.
         new_changed_file_data = self.db.fetch_unknown_files(files_fshas, self.exec_id)
 
+        print('new changed file data:\n', new_changed_file_data)
         # Get the mhashes for the files from above
         files_mhashes = collect_mhashes(self.source_tree, new_changed_file_data)
 
