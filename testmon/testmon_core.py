@@ -297,6 +297,7 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
         files_mhashes = collect_mhashes(self.source_tree, new_changed_file_data)
 
         tests = self.db.determine_tests(self.exec_id, files_mhashes)
+        print("tests after determination:\n", tests)
         affected_tests, self.failing_tests = tests["affected"], tests["failing"]
 
         if assert_old:
