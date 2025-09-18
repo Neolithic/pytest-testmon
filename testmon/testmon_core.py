@@ -291,7 +291,7 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
             if module:
                 files_fshas[filename] = module.fs_fsha
 
-        print('file_fshas:', file_fshas)
+        print('file_fshas:', files_fshas)
         # Compare the fshas from disk to the fshas in the database and get files
         # where the fsha is not in database.
         new_changed_file_data = self.db.fetch_unknown_files(files_fshas, self.exec_id)
