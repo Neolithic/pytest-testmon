@@ -488,6 +488,8 @@ class DB:  # pylint: disable=too-many-public-methods
             {"files_shas_id": files_shas_id, "exec_id": exec_id},
         ):
             result.append(row["filename"])
+        print("inputs:\n", exec_id, files_shas_id)
+        print("result after unknown file fetch:\n", result)
         return result
 
     def delete_filenames(self, con):
