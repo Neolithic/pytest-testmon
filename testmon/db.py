@@ -488,8 +488,8 @@ class DB:  # pylint: disable=too-many-public-methods
             {"files_shas_id": files_shas_id, "exec_id": exec_id},
         ):
             result.append(row["filename"])
-        print("inputs:\n", exec_id, files_shas_id)
-        print("result after unknown file fetch:\n", result)
+        print("debug_log - inputs:", exec_id, files_shas_id)
+        print("debug_log - result after unknown file fetch:", result)
         return result
 
     def delete_filenames(self, con):
@@ -663,16 +663,16 @@ class DB:  # pylint: disable=too-many-public-methods
                 (environment_name,),
             ).fetchone()
 
-            print("environment_name", environment_name)
-            print("python_version", python_version)
+            print("debug_log - environment_name", environment_name)
+            print("debug_log - python_version", python_version)
             if environment:
                 environment_id = environment["id"]
                 packages_changed = (
                     environment["system_packages"] != system_packages
                     or environment["python_version"] != python_version
                 )
-                print("environment_packages", environment["system_packages"])
-                print("environment_python_version", environment["python_version"])
+                print("debug_log - environment_packages", environment["system_packages"])
+                print("debug_log - environment_python_version", environment["python_version"])
             else:
                 packages_changed = False
             if not environment or packages_changed:

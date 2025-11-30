@@ -143,10 +143,10 @@ def init_testmon_data(config: Config):
         config.getini("environment_expression")
     )
     ignore_dependencies = config.getini("testmon_ignore_dependencies")
-    print("ignore_dependencies:", ignore_dependencies)
+    print("debug_log - ignore_dependencies:", ignore_dependencies)
 
     system_packages = get_system_packages(ignore=ignore_dependencies)
-    print("system_packages:", system_packages)
+    print("debug_log - system_packages:", system_packages)
     url = config.getini("tmnet_url")
     rpc_proxy = None
 

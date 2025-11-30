@@ -211,7 +211,7 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
 
         self.system_packages_change = result["packages_changed"]
         self.files_of_interest = result["filenames"]
-        print("result after db fetch:", result)
+        print("debug_log - result after db fetch:", result)
         self.all_files = {}
         self.unstable_test_names = None
         self.unstable_files = None
@@ -285,25 +285,25 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
     def determine_stable(self, assert_old=True):
         files_fshas = {}
 
-        print('files of interest:\n', self.files_of_interest)
+        print('debug_log - files of interest:', self.files_of_interest)
         for filename in self.files_of_interest:
             module = self.source_tree.get_file(filename)
             if module:
                 files_fshas[filename] = module.fs_fsha
 
-        print('file_fshas:', files_fshas)
+        print('debug_log - file_fshas:', files_fshas)
         # Compare the fshas from disk to the fshas in the database and get files
         # where the fsha is not in database.
         new_changed_file_data = self.db.fetch_unknown_files(files_fshas, self.exec_id)
 
-        print('new changed file data:\n', new_changed_file_data)
+        print('debug_log - new changed file data:', new_changed_file_data)
         # Get the mhashes for the files from above
         files_mhashes = collect_mhashes(self.source_tree, new_changed_file_data)
 
-        print("file mhashes\n", files_mhashes)
+        print("debug_log - file mhashes:", files_mhashes)
 
         tests = self.db.determine_tests(self.exec_id, files_mhashes)
-        print("tests after determination:\n", tests)
+        print("debug_log - tests after determination:", tests)
         affected_tests, self.failing_tests = tests["affected"], tests["failing"]
 
         if assert_old:
@@ -317,7 +317,7 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
             self.unstable_test_names.add(fingerprint_miss)
             self.unstable_files.add(fingerprint_miss.split("::", 1)[0])
 
-        print("unstable files:\n", self.unstable_files)
+        print("debug_log - unstable files:", self.unstable_files)
 
         self.stable_test_names = set(self.all_tests) - self.unstable_test_names
         self.stable_files = set(self.all_files) - self.unstable_files
@@ -352,7 +352,7 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
         if {fingerprint_miss[1] for fingerprint_miss in fingerprint_misses} != set(
             new_fingerprint_misses
         ):
-            print("ERROR: old and new fingerprint misses differ.. printing old algo")
+            print("debug_log - ERROR: old and new fingerprint misses differ.. printing old algo")
             print(
                 "\n".join(
                     sorted(
@@ -360,7 +360,7 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
                     )
                 )
             )
-            print("printing new algo")
+            print("debug_log - printing new algo")
             print("\n".join(sorted(new_fingerprint_misses)))
 
     @property
