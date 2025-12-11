@@ -63,11 +63,14 @@ class DB:  # pylint: disable=too-many-public-methods
     def __init__(self, datafile, readonly=False):
         self._readonly = readonly
         file_exists = os.path.exists(datafile)
+        print("debug_log - file_exists", file_exists)
+        print("debug_log - datafile", datafile)
 
         connection = connect(datafile, readonly)
         connection, old_format = check_data_version(
             connection, datafile, self.version_compatibility()
         )
+        print("debug_log - old_format", old_format)
         self.con = connection_options(connection)
 
         if (not file_exists) or old_format:
@@ -75,7 +78,8 @@ class DB:  # pylint: disable=too-many-public-methods
             self.file_created = True
         else:
             self.file_created = False
-
+            
+        print("debug_log - self.file_created", self.file_created)
         self.con.executescript(self._local_temp_tables_statement())
 
     def version_compatibility(self):
