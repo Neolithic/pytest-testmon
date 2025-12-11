@@ -245,6 +245,8 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
         self.system_packages_change = result["packages_changed"]
         self.files_of_interest = result["filenames"]
 
+        print("debug_log - files_of_interest", self.files_of_interest)
+
     @classmethod
     def for_worker(  # pylint: disable=too-many-arguments
         cls,
@@ -353,11 +355,13 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
         # Compare the fshas from disk to the fshas in the database and get files
         # where the fsha is not in database.
         new_changed_file_data = self.db.fetch_unknown_files(files_fshas, self.exec_id)
+        print("debug_log - new_changed_file_data", new_changed_file_data)
 
         # Get the mhashes for the files from above
         files_mhashes = collect_mhashes(self.source_tree, new_changed_file_data)
 
         tests = self.db.determine_tests(self.exec_id, files_mhashes)
+        print("debug_log - tests", tests)
         affected_tests, self.failing_tests = tests["affected"], tests["failing"]
 
         self.all_files = set(self.db.filenames(self.exec_id))
