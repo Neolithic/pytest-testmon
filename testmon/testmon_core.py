@@ -352,9 +352,15 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
             if module:
                 files_fshas[filename] = module.fs_fsha
 
+        print("debug_log - files_of_interest count:", len(self.files_of_interest))
+        print("debug_log - files_fshas count:", len(files_fshas))
+        print("debug_log - files_fshas sample (first 5):", dict(list(files_fshas.items())[:5]))
+        print("debug_log - exec_id:", self.exec_id)
+
         # Compare the fshas from disk to the fshas in the database and get files
         # where the fsha is not in database.
         new_changed_file_data = self.db.fetch_unknown_files(files_fshas, self.exec_id)
+        print("debug_log - new_changed_file_data count:", len(new_changed_file_data))
         print("debug_log - new_changed_file_data", new_changed_file_data)
 
         # Get the mhashes for the files from above

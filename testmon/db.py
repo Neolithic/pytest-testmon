@@ -466,15 +466,68 @@ class DB:  # pylint: disable=too-many-public-methods
     def fetch_unknown_files(
         self, files_fshas, exec_id
     ) -> []:  # exec_id is environment_id in this module
+        print("debug_log - fetch_unknown_files called with:")
+        print("debug_log -   files_fshas count:", len(files_fshas))
+        print("debug_log -   exec_id:", exec_id)
+        print("debug_log -   files_fshas sample (first 5):", dict(list(files_fshas.items())[:5]))
+        
         with self.con as con:
             con.execute("DELETE FROM changed_files_fshas WHERE exec_id = ?", (exec_id,))
+            insert_data = [(exec_id, file, fsha) for file, fsha in files_fshas.items()]
+            print("debug_log -   inserting into changed_files_fshas:", len(insert_data), "rows")
             con.executemany(
                 "INSERT INTO changed_files_fshas VALUES (?, ?, ?)",
-                [(exec_id, file, fsha) for file, fsha in files_fshas.items()],
+                insert_data,
             )
-            return self._fetch_unknown_files_from_one_v(con, exec_id, exec_id)
+            
+            # Verify what was inserted
+            inserted_count = con.execute(
+                "SELECT COUNT(*) FROM changed_files_fshas WHERE exec_id = ?", (exec_id,)
+            ).fetchone()[0]
+            print("debug_log -   verified inserted count:", inserted_count)
+            
+            result = self._fetch_unknown_files_from_one_v(con, exec_id, exec_id)
+            print("debug_log -   fetch_unknown_files returning count:", len(result))
+            return result
 
     def _fetch_unknown_files_from_one_v(self, con, exec_id, files_shas_id):
+        print("debug_log - _fetch_unknown_files_from_one_v called with:")
+        print("debug_log -   exec_id:", exec_id)
+        print("debug_log -   files_shas_id:", files_shas_id)
+        
+        # Check how many test executions exist for this exec_id
+        test_exec_count = con.execute(
+            f"SELECT COUNT(*) FROM test_execution WHERE {self._test_execution_fk_column()} = ?",
+            (exec_id,),
+        ).fetchone()[0]
+        print("debug_log -   test_execution count for exec_id:", test_exec_count)
+        
+        # Check how many files are in changed_files_fshas
+        changed_files_count = con.execute(
+            "SELECT COUNT(*) FROM changed_files_fshas WHERE exec_id = ?", (files_shas_id,)
+        ).fetchone()[0]
+        print("debug_log -   changed_files_fshas count:", changed_files_count)
+        
+        # Check how many files have NULL fsha in file_fp
+        null_fsha_count = con.execute(
+            "SELECT COUNT(DISTINCT f.filename) FROM file_fp f WHERE f.fsha IS NULL"
+        ).fetchone()[0]
+        print("debug_log -   file_fp entries with NULL fsha:", null_fsha_count)
+        
+        # Check total files in file_fp that are linked to this exec_id
+        total_linked_files = con.execute(
+            f"""
+            SELECT COUNT(DISTINCT f.filename)
+            FROM test_execution te, test_execution_file_fp te_ffp, file_fp f
+            WHERE
+                te.{self._test_execution_fk_column()} = ? AND
+                te.id = te_ffp.test_execution_id AND
+                te_ffp.fingerprint_id = f.id
+            """,
+            (exec_id,),
+        ).fetchone()[0]
+        print("debug_log -   total files linked to exec_id:", total_linked_files)
+        
         result = []
         for row in con.execute(
             f"""
