@@ -99,6 +99,9 @@ class DB:  # pylint: disable=too-many-public-methods
         return "environment"
 
     def update_mtimes(self, new_mtimes):
+        print("debug_log - update_mtimes called with", len(new_mtimes), "updates")
+        for mtime, fsha, fp_id in new_mtimes:
+            print(f"debug_log -   UPDATE file_fp: id={fp_id}, mtime={mtime}, fsha={fsha} (is None: {fsha is None})")
         with self.con as con:
             con.executemany(
                 "UPDATE file_fp SET mtime=?, fsha=? WHERE id = ?", new_mtimes
@@ -200,6 +203,7 @@ class DB:  # pylint: disable=too-many-public-methods
     def fetch_or_create_file_fp(
         self, filename, fsha, method_checksums
     ):  # pylint: disable=R0801
+        print(f"debug_log - fetch_or_create_file_fp called: filename={filename}, fsha={fsha} (is None: {fsha is None})")
         cursor = self.con.cursor()
         try:
             cursor.execute(
@@ -212,11 +216,12 @@ class DB:  # pylint: disable=too-many-public-methods
             )
 
             fingerprint_id = cursor.lastrowid
+            print(f"debug_log -   INSERTED into file_fp: id={fingerprint_id}, filename={filename}, fsha={fsha} (is None: {fsha is None})")
         except sqlite3.IntegrityError:  # rather fetching existing fingerprint
-            fingerprint_id, *_ = cursor.execute(
+            existing_record = cursor.execute(
                 """
                 SELECT
-                    id
+                    id, fsha
                 FROM
                     file_fp
                 WHERE
@@ -224,6 +229,9 @@ class DB:  # pylint: disable=too-many-public-methods
                 """,
                 (filename, method_checksums),
             ).fetchone()
+            fingerprint_id = existing_record[0]
+            existing_fsha = existing_record[1]
+            print(f"debug_log -   FETCHED existing file_fp: id={fingerprint_id}, filename={filename}, existing_fsha={existing_fsha} (is None: {existing_fsha is None}), attempted_fsha={fsha} (is None: {fsha is None})")
 
         return fingerprint_id
 
@@ -284,6 +292,7 @@ class DB:  # pylint: disable=too-many-public-methods
                 fingerprints = deps_n_outcomes["deps"]
                 files_fshas = set()
                 for record in fingerprints:
+                    print(f"debug_log - insert_test_file_fps: processing record for test={test_name}, filename={record['filename']}, fsha={record.get('fsha')} (is None: {record.get('fsha') is None})")
                     fingerprint_id = self.fetch_or_create_file_fp(
                         record["filename"],
                         record["fsha"],

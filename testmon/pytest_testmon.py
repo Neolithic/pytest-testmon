@@ -416,6 +416,13 @@ class TestmonCollect:
                 test_executions_fingerprints = self.testmon_data.get_tests_fingerprints(
                     report.nodes_files_lines, self.reports
                 )
+                print("debug_log - pytest_runtest_logreport: about to save_test_execution_file_fps")
+                print(f"debug_log -   test_executions_fingerprints keys (test names): {list(test_executions_fingerprints.keys())}")
+                for test_name, deps_n_outcomes in test_executions_fingerprints.items():
+                    deps = deps_n_outcomes.get("deps", [])
+                    print(f"debug_log -   test={test_name}, num_deps={len(deps)}")
+                    for i, dep in enumerate(deps[:5]):  # Log first 5 deps
+                        print(f"debug_log -     dep[{i}]: filename={dep.get('filename')}, fsha={dep.get('fsha')} (is None: {dep.get('fsha') is None})")
                 self.testmon_data.save_test_execution_file_fps(
                     test_executions_fingerprints
                 )
@@ -427,6 +434,13 @@ class TestmonCollect:
             test_executions_fingerprints = self.testmon_data.get_tests_fingerprints(
                 nodes_files_lines, self.reports
             )
+            print("debug_log - pytest_keyboard_interrupt: about to save_test_execution_file_fps")
+            print(f"debug_log -   test_executions_fingerprints keys (test names): {list(test_executions_fingerprints.keys())}")
+            for test_name, deps_n_outcomes in test_executions_fingerprints.items():
+                deps = deps_n_outcomes.get("deps", [])
+                print(f"debug_log -   test={test_name}, num_deps={len(deps)}")
+                for i, dep in enumerate(deps[:5]):  # Log first 5 deps
+                    print(f"debug_log -     dep[{i}]: filename={dep.get('filename')}, fsha={dep.get('fsha')} (is None: {dep.get('fsha') is None})")
             self.testmon_data.save_test_execution_file_fps(test_executions_fingerprints)
             self.testmon.close()
 

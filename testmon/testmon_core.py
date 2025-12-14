@@ -412,6 +412,14 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
         return durations
 
     def save_test_execution_file_fps(self, test_executions_fingerprints):
+        print("debug_log - save_test_execution_file_fps: about to call insert_test_file_fps")
+        print(f"debug_log -   exec_id={self.exec_id}")
+        print(f"debug_log -   test_executions_fingerprints keys (test names): {list(test_executions_fingerprints.keys())}")
+        for test_name, deps_n_outcomes in test_executions_fingerprints.items():
+            deps = deps_n_outcomes.get("deps", [])
+            print(f"debug_log -   test={test_name}, num_deps={len(deps)}")
+            for i, dep in enumerate(deps[:5]):  # Log first 5 deps
+                print(f"debug_log -     dep[{i}]: filename={dep.get('filename')}, fsha={dep.get('fsha')} (is None: {dep.get('fsha') is None})")
         self.db.insert_test_file_fps(test_executions_fingerprints, self.exec_id)
 
     def fetch_saving_stats(self, select):
