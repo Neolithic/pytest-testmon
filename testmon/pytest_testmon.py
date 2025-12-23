@@ -582,6 +582,7 @@ class TestmonSelect:
         print("debug_log - pytest_collection_modifyitems: called")
         print(f"debug_log -   total items: {len(items)}")
         print(f"debug_log -   deselected_tests count: {len(self.deselected_tests)}")
+        print(f"debug_log -   deselected_tests (first 10): {list(self.deselected_tests)[:10]}")
         print(f"debug_log -   testmon_config.select: {self.config.testmon_config.select}")
         selected = []
         deselected = []
