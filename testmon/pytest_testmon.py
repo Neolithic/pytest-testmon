@@ -276,7 +276,7 @@ def pytest_configure(config):
     if tm_conf.select or tm_conf.collect:
         try:
             init_testmon_data(config)
-            register_plugins(config, tm_conf.select, tm_conf.collect, cov_plugin)
+            register_plugins(config, True, tm_conf.collect, cov_plugin)
         except TestmonException as error:
             pytest.exit(str(error))
 
