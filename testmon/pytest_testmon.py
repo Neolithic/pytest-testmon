@@ -139,10 +139,18 @@ def testmon_options(config):
 
 
 def init_testmon_data(config: Config):
+    print("debug_log - init_testmon_data: called")
+    print(f"debug_log -   config.rootdir: {config.rootdir.strpath if hasattr(config, 'rootdir') else 'N/A'}")
+    print(f"debug_log -   config.inipath: {config.inipath if hasattr(config, 'inipath') else 'N/A'}")
+    print(f"debug_log -   config.testmon_config: {getattr(config, 'testmon_config', 'N/A')}")
+
+    print(f"debug_log -   has workerinput: {hasattr(config, 'workerinput')}")
     environment = config.getoption("environment_expression") or eval_environment(
         config.getini("environment_expression")
     )
+    print(f"debug_log -   environment: {environment}")
     ignore_dependencies = config.getini("testmon_ignore_dependencies")
+    print(f"debug_log -   ignore_dependencies: {ignore_dependencies}")
 
     system_packages = get_system_packages(ignore=ignore_dependencies)
 

@@ -554,6 +554,8 @@ class DB:  # pylint: disable=too-many-public-methods
             {"files_shas_id": files_shas_id, "exec_id": exec_id},
         ):
             result.append(row["filename"])
+        print(f"debug_log - _fetch_unknown_files_from_one_v: returning {len(result)} filenames")
+        print(f"debug_log -   all filenames: {result}")
         return result
 
     def delete_filenames(self, con):
