@@ -360,6 +360,10 @@ class TestmonCollect:
     def __init__(
         self, testmon, testmon_data: TestmonData, running_as="single", cov_plugin=None
     ):
+        print("debug_log - TestmonCollect.__init__: called")
+        print(f"debug_log -   running_as: {running_as}")
+        print(f"debug_log -   testmon_data.exec_id: {testmon_data.exec_id if hasattr(testmon_data, 'exec_id') else 'N/A'}")
+        print(f"debug_log -   cov_plugin: {cov_plugin is not None}")
         self.testmon_data: TestmonData = testmon_data
         self.testmon: TestmonCollector = testmon
         self._running_as = running_as
@@ -376,22 +380,36 @@ class TestmonCollect:
         makeitem_result = yield
         items = makeitem_result.get_result() or []
         try:
-            self.raw_test_names.extend(
-                [item.nodeid for item in items if isinstance(item, pytest.Item)]
-            )
+            new_test_names = [item.nodeid for item in items if isinstance(item, pytest.Item)]
+            if new_test_names:
+                print(f"debug_log - pytest_pycollect_makeitem: collected {len(new_test_names)} items")
+                print(f"debug_log -   new test names: {new_test_names}")
+                print(f"debug_log -   raw_test_names before extend: {len(self.raw_test_names)}")
+            self.raw_test_names.extend(new_test_names)
+            if new_test_names:
+                print(f"debug_log -   raw_test_names after extend: {len(self.raw_test_names)}")
         except TypeError:  # 'Class' object is not iterable
+            print(f"debug_log - pytest_pycollect_makeitem: TypeError caught (non-iterable result)")
             pass
 
     @pytest.hookimpl(tryfirst=True)
     def pytest_collection_modifyitems(
         self, session, config, items
     ):  # pylint: disable=unused-argument
+        print("debug_log - TestmonCollect.pytest_collection_modifyitems: called")
+        print(f"debug_log -   session.testsfailed: {session.testsfailed}")
+        print(f"debug_log -   self._running_as: {self._running_as}")
+        print(f"debug_log -   raw_test_names count: {len(self.raw_test_names)}")
+        print(f"debug_log -   raw_test_names sample (first 10): {self.raw_test_names[:10]}")
         should_sync = not session.testsfailed and self._running_as in (
             "single",
             "controller",
         )
+        print(f"debug_log -   should_sync: {should_sync}")
         if should_sync:
+            print(f"debug_log -   calling sync_db_fs_tests with {len(self.raw_test_names)} test names")
             config.testmon_data.sync_db_fs_tests(retain=set(self.raw_test_names))
+            print(f"debug_log -   sync_db_fs_tests completed")
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_protocol(
@@ -561,6 +579,10 @@ class TestmonSelect:
     def pytest_collection_modifyitems(
         self, session, config, items
     ):  # pylint: disable=unused-argument
+        print("debug_log - pytest_collection_modifyitems: called")
+        print(f"debug_log -   total items: {len(items)}")
+        print(f"debug_log -   deselected_tests count: {len(self.deselected_tests)}")
+        print(f"debug_log -   testmon_config.select: {self.config.testmon_config.select}")
         selected = []
         deselected = []
         for item in items:
@@ -569,16 +591,23 @@ class TestmonSelect:
             else:
                 selected.append(item)
 
+        print(f"debug_log -   after categorization: selected={len(selected)}, deselected={len(deselected)}")
+        print(f"debug_log -   sample deselected (first 5): {[item.nodeid for item in deselected[:5]]}")
+        print(f"debug_log -   sample selected (first 5): {[item.nodeid for item in selected[:5]]}")
+
         sort_items_by_duration(selected, self.testmon_data.avg_durations)
 
         if self.config.testmon_config.select:
+            print("debug_log -   select=True: only keeping selected items")
             items[:] = selected
             session.config.hook.pytest_deselected(
                 items=([FakeItemFromTestmon(session.config)] * len(deselected))
             )
         else:
+            print("debug_log -   select=False: keeping both selected and deselected")
             sort_items_by_duration(deselected, self.testmon_data.avg_durations)
             items[:] = selected + deselected
+        print(f"debug_log -   final items count: {len(items)}")
 
     @pytest.hookimpl(trylast=True)
     def pytest_sessionfinish(self, session, exitstatus):

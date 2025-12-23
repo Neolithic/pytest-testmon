@@ -233,8 +233,10 @@ def read_source_sha(filename: str):
 
 
 def noncached_get_files_shas(directory):
+    print(f"debug_log - noncached_get_files_shas: called with directory={directory}")
     all_shas = {}
     try:
+        print(f"debug_log -   running git ls-files --stage -m {directory}")
         result = run(
             ["git", "ls-files", "--stage", "-m", directory],
             capture_output=True,
@@ -242,7 +244,12 @@ def noncached_get_files_shas(directory):
             encoding="utf-8",
             check=True,
         )
-    except (FileNotFoundError, CalledProcessError):
+        print(f"debug_log -   git command succeeded, stdout lines: {len(result.stdout.splitlines())}")
+    except FileNotFoundError:
+        print("debug_log -   FileNotFoundError: git command not found")
+        return all_shas
+    except CalledProcessError as e:
+        print(f"debug_log -   CalledProcessError: git command failed with returncode={e.returncode}")
         return all_shas
 
     modified_files = set()
@@ -251,10 +258,14 @@ def noncached_get_files_shas(directory):
         _, filename = filename_with_junk.split("\t", 1)
         if filename in all_shas:
             modified_files.add(filename)
+            print(f"debug_log -   duplicate filename found (will be removed): {filename}")
         else:
             all_shas[filename] = hsh
+    print(f"debug_log -   processed {len(all_shas)} unique files, {len(modified_files)} duplicates")
+    print(f"debug_log -   sample files (first 5): {dict(list(all_shas.items())[:5])}")
     for modified_file in modified_files:
         del all_shas[modified_file]
+    print(f"debug_log -   returning {len(all_shas)} files after removing duplicates")
     return all_shas
 
 
