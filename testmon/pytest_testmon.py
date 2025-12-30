@@ -381,15 +381,15 @@ class TestmonCollect:
         items = makeitem_result.get_result() or []
         try:
             new_test_names = [item.nodeid for item in items if isinstance(item, pytest.Item)]
-            if new_test_names:
-                print(f"debug_log - pytest_pycollect_makeitem: collected {len(new_test_names)} items")
-                print(f"debug_log -   new test names: {new_test_names}")
-                print(f"debug_log -   raw_test_names before extend: {len(self.raw_test_names)}")
+            #if new_test_names:
+                #print(f"debug_log - pytest_pycollect_makeitem: collected {len(new_test_names)} items")
+                #print(f"debug_log -   new test names: {new_test_names}")
+                #print(f"debug_log -   raw_test_names before extend: {len(self.raw_test_names)}")
             self.raw_test_names.extend(new_test_names)
-            if new_test_names:
-                print(f"debug_log -   raw_test_names after extend: {len(self.raw_test_names)}")
+            #if new_test_names:
+                #print(f"debug_log -   raw_test_names after extend: {len(self.raw_test_names)}")
         except TypeError:  # 'Class' object is not iterable
-            print(f"debug_log - pytest_pycollect_makeitem: TypeError caught (non-iterable result)")
+            print("debug_log - pytest_pycollect_makeitem: TypeError caught (non-iterable result)")
             pass
 
     @pytest.hookimpl(tryfirst=True)
