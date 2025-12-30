@@ -292,7 +292,7 @@ class DB:  # pylint: disable=too-many-public-methods
                 fingerprints = deps_n_outcomes["deps"]
                 files_fshas = set()
                 for record in fingerprints:
-                    print(f"debug_log - insert_test_file_fps: processing record for test={test_name}, filename={record['filename']}, fsha={record.get('fsha')} (is None: {record.get('fsha') is None})")
+                    #print(f"debug_log - insert_test_file_fps: processing record for test={test_name}, filename={record['filename']}, fsha={record.get('fsha')} (is None: {record.get('fsha') is None})")
                     fingerprint_id = self.fetch_or_create_file_fp(
                         record["filename"],
                         record["fsha"],
