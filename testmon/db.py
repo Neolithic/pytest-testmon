@@ -262,24 +262,35 @@ class DB:  # pylint: disable=too-many-public-methods
         return cursor.lastrowid
 
     def insert_test_file_fps(self, tests_deps_n_outcomes: TestExecutions, exec_id=None):
+        print("debug_log - insert_test_file_fps: called")
+        print(f"debug_log -   exec_id: {exec_id}")
+        print(f"debug_log -   tests_deps_n_outcomes count: {len(tests_deps_n_outcomes)}")
+        print(f"debug_log -   test names (first 10): {list(tests_deps_n_outcomes.keys())[:10]}")
         assert exec_id
         with self.con as con:
             cursor = con.cursor()
 
+            delete_test_execution_file_fp_data = [(exec_id, test_name) for test_name in tests_deps_n_outcomes]
+            print(f"debug_log -   deleting from test_execution_file_fp: {len(delete_test_execution_file_fp_data)} rows")
             cursor.executemany(
                 f"DELETE FROM test_execution_file_fp "
                 f"WHERE test_execution_id in "
                 f"      (SELECT id FROM test_execution WHERE {self._test_execution_fk_column()}=? AND test_name=?)",
-                [(exec_id, test_name) for test_name in tests_deps_n_outcomes],
+                delete_test_execution_file_fp_data,
             )
 
+            delete_test_execution_data = [(exec_id, test_name) for test_name in tests_deps_n_outcomes]
+            print(f"debug_log -   deleting from test_execution: {len(delete_test_execution_data)} rows")
             cursor.executemany(
                 f"DELETE FROM test_execution WHERE {self._test_execution_fk_column()}=? AND test_name=?",
-                [(exec_id, test_name) for test_name in tests_deps_n_outcomes],
+                delete_test_execution_data,
             )
 
             test_execution_file_fps = []
+            print(f"debug_log -   processing {len(tests_deps_n_outcomes)} tests")
             for test_name, deps_n_outcomes in tests_deps_n_outcomes.items():
+                print(f"debug_log -   processing test: {test_name}")
+                print(f"debug_log -     duration: {deps_n_outcomes.get('duration', None)}, failed: {deps_n_outcomes.get('failed', None)}, forced: {deps_n_outcomes.get('forced', None)}")
                 te_id = self._insert_test_execution(
                     con,
                     exec_id,
@@ -288,8 +299,10 @@ class DB:  # pylint: disable=too-many-public-methods
                     deps_n_outcomes.get("failed", None),
                     deps_n_outcomes.get("forced", None),
                 )
+                print(f"debug_log -     inserted test_execution with id: {te_id}")
 
                 fingerprints = deps_n_outcomes["deps"]
+                print(f"debug_log -     fingerprints count: {len(fingerprints)}")
                 files_fshas = set()
                 for record in fingerprints:
                     #print(f"debug_log - insert_test_file_fps: processing record for test={test_name}, filename={record['filename']}, fsha={record.get('fsha')} (is None: {record.get('fsha') is None})")
@@ -301,13 +314,19 @@ class DB:  # pylint: disable=too-many-public-methods
 
                     test_execution_file_fps.append((te_id, fingerprint_id))
                     files_fshas.add((record["filename"], record["fsha"]))
+                print(f"debug_log -     added {len(fingerprints)} fingerprints for test {test_name}")
+            print(f"debug_log -   total test_execution_file_fps to insert: {len(test_execution_file_fps)}")
             if test_execution_file_fps:
+                print(f"debug_log -   inserting {len(test_execution_file_fps)} rows into test_execution_file_fp")
                 cursor.executemany(
                     "INSERT INTO test_execution_file_fp VALUES (?, ?)",
                     test_execution_file_fps,
                 )
+                print(f"debug_log -   inserted into test_execution_file_fp, clearing cache")
                 self.fetch_or_create_file_fp.cache_clear()
+                print(f"debug_log -   calling insert_into_suite_files_fshas with {len(files_fshas)} files")
                 self.insert_into_suite_files_fshas(con, exec_id, files_fshas)
+            print("debug_log - insert_test_file_fps: completed")
 
     def insert_into_suite_files_fshas(self, con, exec_id, files_fshas):
         pass
