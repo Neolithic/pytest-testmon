@@ -555,7 +555,7 @@ class DB:  # pylint: disable=too-many-public-methods
             (exec_id,),
         ).fetchone()[0]
         print("debug_log -   total files linked to exec_id:", total_linked_files)
-        
+
         result = []
         for row in con.execute(
             f"""
@@ -596,6 +596,11 @@ class DB:  # pylint: disable=too-many-public-methods
                 ],
             )
 
+            # Debug: which files have None mhash (tests in these should become affected)
+            none_mhash_files = [f for f, m in files_mhashes.items() if m is None]
+            if none_mhash_files:
+                print("debug_log - determine_tests: files with None mhash:", none_mhash_files)
+
             results = []
             for row in self.con.execute(
                 f"""
@@ -623,10 +628,26 @@ class DB:  # pylint: disable=too-many-public-methods
                     ]
                 )
 
+            # Debug: which (filename, test_name) we got from the join
+            print("debug_log - determine_tests: results count:", len(results))
+            for r in results[:20]:
+                print("debug_log -   result:", r[0], "|", r[1], "| mhash is None:", files_mhashes.get(r[0]) is None)
+            if len(results) > 20:
+                print("debug_log -   ... and", len(results) - 20, "more")
+
             method_misses = []
             for result in results:
-                if not check_fingerprint_db(files_mhashes, result[0], result[2]):
-                    method_misses.append(result[1])
+                filename, test_name, stored_checksums = result[0], result[1], result[2]
+                passed = check_fingerprint_db(files_mhashes, filename, stored_checksums)
+                if not passed:
+                    method_misses.append(test_name)
+                # Debug: for files with None mhash, show why each test did/didn't get into method_misses
+                if files_mhashes.get(filename) is None and not passed:
+                    print("debug_log - method_miss (None mhash file):", filename, "->", test_name)
+                elif files_mhashes.get(filename) is None and passed:
+                    print("debug_log - UNEXPECTED: None mhash but check passed:", filename, "->", test_name)
+
+            print("debug_log - determine_tests: method_misses count:", len(method_misses))
 
             failing_tests = [
                 row["test_name"]

@@ -409,7 +409,7 @@ class TestmonCollect:
         if should_sync:
             print(f"debug_log -   calling sync_db_fs_tests with {len(self.raw_test_names)} test names")
             config.testmon_data.sync_db_fs_tests(retain=set(self.raw_test_names))
-            print(f"debug_log -   sync_db_fs_tests completed")
+            print("debug_log -   sync_db_fs_tests completed")
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_protocol(

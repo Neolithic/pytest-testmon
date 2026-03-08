@@ -365,6 +365,8 @@ class TestmonData:  # pylint: disable=too-many-instance-attributes
 
         # Get the mhashes for the files from above
         files_mhashes = collect_mhashes(self.source_tree, new_changed_file_data)
+        print("debug_log - files_mhashes count:", len(files_mhashes))
+        print("debug_log - files_mhashes sample (first 5):", dict(list(files_mhashes.items())[:5]))
 
         tests = self.db.determine_tests(self.exec_id, files_mhashes)
         print("debug_log - tests", tests)
